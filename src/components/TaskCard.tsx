@@ -1,4 +1,4 @@
-import type { Task } from "../types";
+import type { Task, ColumnType } from "../types";
 import { useTaskStore } from "../store/useTaskStore";
 
 const TaskCard = ({ task }: { task: Task }) => {
@@ -6,16 +6,20 @@ const TaskCard = ({ task }: { task: Task }) => {
   const moveTask = useTaskStore((s) => s.moveTask);
 
   const move = (direction: "forward" | "back") => {
-    const transitions = {
+    const transitions: Record<
+      ColumnType,
+      Partial<Record<"forward" | "back", ColumnType>>
+    > = {
       todo: { forward: "inprogress" },
       inprogress: { forward: "done", back: "todo" },
       done: { back: "inprogress" },
     };
 
-    const next = transitions[task.column]?.[direction];
-    if (!next) return;
+    const next = transitions[task.column][direction];
 
-    moveTask(task.id, next);
+    if (next) {
+      moveTask(task.id, next);
+    }
   };
 
   return (
@@ -30,6 +34,7 @@ const TaskCard = ({ task }: { task: Task }) => {
         {task.column !== "done" && (
           <button onClick={() => move("forward")}>→</button>
         )}
+
         <button onClick={() => deleteTask(task.id)}>Delete</button>
       </div>
     </div>
